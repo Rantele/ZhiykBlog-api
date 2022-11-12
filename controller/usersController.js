@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-06 19:22:00
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-12 12:20:16
+ * @LastEditTime: 2022-11-12 14:59:53
  * @Description:用户接口模块
  *
  */
@@ -647,9 +647,10 @@ tagListFilter = (req, res) => {
 //获取用户收藏md
 getUserMdStarPost = (req, res) => {
   const user = req.user
+  const { search } = req.query
   query(
-    'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.id In (select postid as id from stars where uid=?)',
-    [user.uid]
+    'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.id In (select postid as id from stars where uid=?) and post.title REGEXP ?',
+    [user.uid, search || '.*?']
   )
     .then((result) => {
       res.send({
