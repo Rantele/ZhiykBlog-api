@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-06 19:22:00
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-10 12:35:31
+ * @LastEditTime: 2022-11-12 12:20:16
  * @Description:用户接口模块
  *
  */
@@ -437,7 +437,11 @@ deleteMdImg = (req, res) => {
 //获取用户全部md
 getUserMdList = (req, res) => {
   const user = req.user
-  query('select id,title,cover,label,blogid,vote_count,comment_count,create_time from post where uid=?', [user.uid])
+  const { search } = req.query
+  query(
+    'select id,title,cover,label,blogid,vote_count,comment_count,create_time from post where uid=? and title REGEXP ? order by create_time',
+    [user.uid, search || '.*?']
+  )
     .then((result) => {
       if (result.length === 0) {
         res.send({ code: 200, message: '操作成功', data: [] })
