@@ -10,4 +10,8 @@ router.get('/search', blogs.searchMd)
 //comments
 router.get('/detail', blogs.getMdDetail)
 router.get('/comment', blogs.getMdCommentList)
+
+//manage
+router.get('/statistics', blogs.getBlogStatistics)
+router.get('/filterstatistics', blogs.getMdListStatisticsByLabel)
 module.exports = router

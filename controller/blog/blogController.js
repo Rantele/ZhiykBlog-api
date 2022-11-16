@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-28 17:54:49
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-10 21:33:30
+ * @LastEditTime: 2022-11-16 19:31:06
  * @Description:文章模块
  *
  */
@@ -74,7 +74,7 @@ getRecommendMdList = (req, res) => {
   }
   query(
     'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.label REGEXP ? order by create_time desc',
-    [label.join('|') || '^(\\[).*?(\\])$']
+    ['.*?(' + label.join('|') + ')(,|])' || '^(\\[).*?(\\])$']
   )
     .then((result) => {
       res.send({
@@ -145,7 +145,7 @@ searchMd = (req, res) => {
   } else if (label) {
     query(
       'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.label REGEXP ? order by create_time desc',
-      [label]
+      ['.*?(' + label + ')(,|])']
     )
       .then((result) => {
         console.log(result)
@@ -259,6 +259,72 @@ getMdCommentList = (req, res) => {
     })
 }
 
+/**
+ * blog管理模块
+ */
+
+//获取文章统计信息
+getBlogStatistics = (req, res) => {
+  //today、7day、30day
+  const { startDate, endDate } = req.query
+  const resData = {}
+  query('SELECT label FROM post WHERE create_time  between ? and ?', [startDate, endDate])
+    .then((result) => {
+      if (result.length === 0) {
+        res.send({
+          code: 200,
+          message: 'success',
+          data: [],
+        })
+      } else {
+        result.forEach((element) => {
+          const labels = JSON.parse(element['label'])
+          if (labels) {
+            labels.forEach((label) => {
+              resData[label] ? (resData[label] += 1) : (resData[label] = 1)
+            })
+          }
+        })
+        query(`select label as name,id from blog_labels where id in(${Object.keys(resData)})`).then((result) => {
+          if (result) {
+            result.forEach((e) => {
+              e['value'] = resData[e.id]
+            })
+          }
+          res.send({
+            code: 200,
+            message: 'success',
+            data: result,
+          })
+        })
+      }
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//根据标签获取文章列表统计信息
+getMdListStatisticsByLabel = (req, res) => {
+  const { label } = req.query
+  console.log(label)
+  query(
+    'select post.id,post.title,post.blogid,user.nickname,post.create_time,DATE_FORMAT(post.create_time,"%Y-%m") as date from post,user where post.uid=user.uid and label REGEXP ?',
+    ['.*?(' + label + ')(,|])']
+  ).then((result) => {
+    console.log()
+    res.send({
+      code: 200,
+      message: 'success',
+      data: result,
+    })
+  })
+}
+
 module.exports = {
   getMdContent,
   getLatestMdList,
@@ -268,4 +334,7 @@ module.exports = {
 
   getMdDetail,
   getMdCommentList,
+
+  getBlogStatistics,
+  getMdListStatisticsByLabel,
 }

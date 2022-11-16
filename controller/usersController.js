@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-06 19:22:00
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-12 14:59:53
+ * @LastEditTime: 2022-11-16 17:51:38
  * @Description:用户接口模块
  *
  */
@@ -17,6 +17,7 @@ crypto = require('node:crypto') //uuid
 var path = require('path')
 const formidable = require('formidable')
 const { getImage, setImage, delImage, hasImage } = require('../util/image')
+const SseStream = require('ssestream')
 
 //发送邮箱验证码
 sendMail = (req, res) => {
