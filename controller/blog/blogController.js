@@ -2,14 +2,15 @@
  * @Author: Rantele
  * @Date: 2022-10-28 17:54:49
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-16 19:31:06
+ * @LastEditTime: 2022-11-18 16:19:21
  * @Description:文章模块
  *
  */
 
-const { query } = require('../../util/mysql')
-
 //mysql
+const { query } = require('../../util/mysql')
+//验证用户权限
+const roleVerify = require('../../util/roleVerify')
 
 //获取文章内容
 getMdContent = (req, res) => {
@@ -41,7 +42,7 @@ getMdContent = (req, res) => {
 //获取最新文章列表
 getLatestMdList = (req, res) => {
   query(
-    'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid order by create_time desc'
+    'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.status!=-1 order by create_time desc'
   )
     .then((result) => {
       res.send({
@@ -73,7 +74,7 @@ getRecommendMdList = (req, res) => {
       })
   }
   query(
-    'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.label REGEXP ? order by create_time desc',
+    'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.status!=-1 and post.label REGEXP ? order by create_time desc',
     ['.*?(' + label.join('|') + ')(,|])' || '^(\\[).*?(\\])$']
   )
     .then((result) => {
@@ -95,7 +96,7 @@ getRecommendMdList = (req, res) => {
 //获取热门文章列表
 getHotMdList = (req, res) => {
   query(
-    'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and DATE_SUB(CURDATE(),INTERVAL 7 DAY)<=DATE(post.create_time) order by post.vote_count,post.comment_count desc'
+    'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.status!=-1 and DATE_SUB(CURDATE(),INTERVAL 7 DAY)<=DATE(post.create_time) order by post.vote_count,post.comment_count desc'
   )
     .then((result) => {
       res.send({
@@ -125,7 +126,7 @@ searchMd = (req, res) => {
   }
   if (search) {
     query(
-      'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user,blog where post.uid=user.uid and blog.id=post.blogid and (post.title REGEXP ? or post.abstract REGEXP ? or blog.body REGEXP ? or user.nickname REGEXP ?) order by create_time desc',
+      'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user,blog where post.uid=user.uid and post.status!=-1 and blog.id=post.blogid and (post.title REGEXP ? or post.abstract REGEXP ? or blog.body REGEXP ? or user.nickname REGEXP ?) order by create_time desc',
       [search, search, search, search]
     )
       .then((result) => {
@@ -144,7 +145,7 @@ searchMd = (req, res) => {
       })
   } else if (label) {
     query(
-      'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.label REGEXP ? order by create_time desc',
+      'select post.id,post.title,post.abstract,post.cover,post.vote_count,post.comment_count,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.status!=-1 and post.label REGEXP ? order by create_time desc',
       ['.*?(' + label + ')(,|])']
     )
       .then((result) => {
@@ -178,7 +179,7 @@ searchMd = (req, res) => {
 getMdCommentList = (req, res) => {
   const { id } = req.query
   query(
-    'select comments.id,comments.comment,comments.parentId,user.nickname,user.img,comments.create_time from comments,user where comments.uid=user.uid and post_id=?',
+    'select comments.id,comments.comment,comments.parentId,user.nickname,user.img,comments.create_time from comments,user where comments.uid=user.uid and post_id=? and post.status!=-1',
     [id]
   )
     .then((result) => {
@@ -201,10 +202,16 @@ getMdDetail = (req, res) => {
   //点赞数，评论数，
   const user = req.user
   const { postid, blogid } = req.query
+  if (postid === undefined || !blogid === undefined) {
+    return res.status(403).send({
+      code: -1,
+      message: '无效参数',
+    })
+  }
   console.log(postid, blogid, user.uid)
   const postDataPms = query(
-    'select post.id,post.title,post.cover,post.vote_count,post.comment_count,post.create_time,user.nickname,user.img,user.id as user_id from post,user where post.uid=user.uid and post.id=?',
-    [postid]
+    'select post.id,post.title,post.cover,post.vote_count,post.comment_count,post.create_time,user.nickname,user.img,user.id as user_id from post,user where post.uid=user.uid and post.id=? and blogid=? and post.status!=-1',
+    [postid, blogid]
   )
   const bodyPms = query('select body from blog where id=?', [blogid])
   const starPms = query(
@@ -217,16 +224,25 @@ getMdDetail = (req, res) => {
   ])
   Promise.all([postDataPms, bodyPms, starPms, isVotePms])
     .then((values) => {
-      res.send({
-        code: 200,
-        message: '操作成功',
-        data: {
-          blogData: values[0][0],
-          body: values[1][0].body,
-          star: values[2][0],
-          isVote: values[3][0].isVote,
-        },
-      })
+      console.log(values[0])
+      if (values[0].length === 0) {
+        res.send({
+          code: 200,
+          message: '操作成功',
+          data: {},
+        })
+      } else {
+        res.send({
+          code: 200,
+          message: '操作成功',
+          data: {
+            blogData: values[0][0],
+            body: values[1][0].body,
+            star: values[2][0],
+            isVote: values[3][0].isVote,
+          },
+        })
+      }
     })
     .catch((err) => {
       console.log('[catch]:', err)
@@ -266,6 +282,13 @@ getMdCommentList = (req, res) => {
 //获取文章统计信息
 getBlogStatistics = (req, res) => {
   //today、7day、30day
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
   const { startDate, endDate } = req.query
   const resData = {}
   query('SELECT label FROM post WHERE create_time  between ? and ?', [startDate, endDate])
@@ -310,19 +333,89 @@ getBlogStatistics = (req, res) => {
 
 //根据标签获取文章列表统计信息
 getMdListStatisticsByLabel = (req, res) => {
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
   const { label } = req.query
   console.log(label)
   query(
     'select post.id,post.title,post.blogid,user.nickname,post.create_time,DATE_FORMAT(post.create_time,"%Y-%m") as date from post,user where post.uid=user.uid and label REGEXP ?',
     ['.*?(' + label + ')(,|])']
-  ).then((result) => {
-    console.log()
-    res.send({
-      code: 200,
-      message: 'success',
-      data: result,
+  )
+    .then((result) => {
+      res.send({
+        code: 200,
+        message: 'success',
+        data: result,
+      })
     })
-  })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//获取文章概述信息
+getMdOverviewData = (req, res) => {
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
+  query(
+    'SELECT COUNT(IF(status != -1,TRUE,NULL)) AS total,COUNT(IF(status = 0,TRUE,NULL)) AS examine,COUNT(IF(status = -1,TRUE,NULL)) AS failed,COUNT(IF(TO_DAYS(create_time) = TO_DAYS(NOW()) and status !=-1,TRUE,NULL)) AS "td_add" FROM post'
+  )
+    .then((result) => {
+      res.send({
+        code: 200,
+        message: 'success',
+        data: result[0],
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//获取文章概述信息
+getMdAuditOverviewData = (req, res) => {
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
+  query(
+    'SELECT COUNT(IF(status != 0,TRUE,NULL))/COUNT(*) AS compelete_rate,COUNT(IF(status = 0,TRUE,NULL)) AS examine,COUNT(IF(status = 1,TRUE,NULL))/COUNT(IF(status = 1 or status = -1,TRUE,NULL)) AS pass_rate FROM post'
+  )
+    .then((result) => {
+      res.send({
+        code: 200,
+        message: 'success',
+        data: result[0],
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
 }
 
 module.exports = {
@@ -337,4 +430,6 @@ module.exports = {
 
   getBlogStatistics,
   getMdListStatisticsByLabel,
+  getMdOverviewData,
+  getMdAuditOverviewData,
 }

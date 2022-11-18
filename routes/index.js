@@ -1,6 +1,5 @@
 var express = require('express')
 var router = express.Router()
-const SseStream = require('ssestream')
 
 /* GET home page. */
 // router.get('/', function(req, res, next) {

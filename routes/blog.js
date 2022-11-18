@@ -14,4 +14,6 @@ router.get('/comment', blogs.getMdCommentList)
 //manage
 router.get('/statistics', blogs.getBlogStatistics)
 router.get('/filterstatistics', blogs.getMdListStatisticsByLabel)
+router.get('/overviewData', blogs.getMdOverviewData)
+router.get('/auditOverviewData', blogs.getMdAuditOverviewData)
 module.exports = router

@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-06 19:22:00
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-16 17:51:38
+ * @LastEditTime: 2022-11-18 15:54:45
  * @Description:用户接口模块
  *
  */
@@ -17,7 +17,6 @@ crypto = require('node:crypto') //uuid
 var path = require('path')
 const formidable = require('formidable')
 const { getImage, setImage, delImage, hasImage } = require('../util/image')
-const SseStream = require('ssestream')
 
 //发送邮箱验证码
 sendMail = (req, res) => {
@@ -532,6 +531,7 @@ createMd = (req, res) => {
           uid: user.uid,
           create_time,
           label,
+          status: 0,
         })
       })
       .then(() => {
@@ -572,8 +572,8 @@ updateMd = (req, res) => {
         } else {
           trans([
             {
-              sql: 'update post set title=?,abstract=?,cover=?,label=? where id=?',
-              values: [title, abstract, cover, label, id],
+              sql: 'update post set title=?,abstract=?,cover=?,label=?,status=? where id=?',
+              values: [title, abstract, cover, label, 0, id],
             },
             {
               sql: 'update blog set body=? where id=?',
