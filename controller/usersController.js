@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-06 19:22:00
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-18 15:54:45
+ * @LastEditTime: 2022-11-22 20:54:54
  * @Description:用户接口模块
  *
  */
@@ -531,7 +531,7 @@ createMd = (req, res) => {
           uid: user.uid,
           create_time,
           label,
-          status: 0,
+          status: -1,
         })
       })
       .then(() => {
@@ -573,7 +573,7 @@ updateMd = (req, res) => {
           trans([
             {
               sql: 'update post set title=?,abstract=?,cover=?,label=?,status=? where id=?',
-              values: [title, abstract, cover, label, 0, id],
+              values: [title, abstract, cover, label, -1, id],
             },
             {
               sql: 'update blog set body=? where id=?',

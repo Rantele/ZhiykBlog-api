@@ -2,13 +2,13 @@
  * @Author: Rantele
  * @Date: 2022-10-28 17:54:49
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-18 16:19:21
+ * @LastEditTime: 2022-11-22 21:37:00
  * @Description:文章模块
  *
  */
 
 //mysql
-const { query } = require('../../util/mysql')
+const { query, trans } = require('../../util/mysql')
 //验证用户权限
 const roleVerify = require('../../util/roleVerify')
 
@@ -390,7 +390,7 @@ getMdOverviewData = (req, res) => {
     })
 }
 
-//获取文章概述信息
+//获取文章审核概述信息
 getMdAuditOverviewData = (req, res) => {
   //vertify role
   if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
@@ -400,13 +400,72 @@ getMdAuditOverviewData = (req, res) => {
     })
   }
   query(
-    'SELECT COUNT(IF(status != 0,TRUE,NULL))/COUNT(*) AS compelete_rate,COUNT(IF(status = 0,TRUE,NULL)) AS examine,COUNT(IF(status = 1,TRUE,NULL))/COUNT(IF(status = 1 or status = -1,TRUE,NULL)) AS pass_rate FROM post'
+    'SELECT COUNT(IF(status != -1,TRUE,NULL))/COUNT(*) AS compelete_rate,COUNT(IF(status = -1,TRUE,NULL)) AS examine,COUNT(IF(status = 1,TRUE,NULL))/COUNT(IF(status !=-1,TRUE,NULL)) AS pass_rate FROM post'
   )
     .then((result) => {
       res.send({
         code: 200,
         message: 'success',
         data: result[0],
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//获取待审核文章列表
+getAuditMdDataList = (req, res) => {
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
+  query(
+    'select post.id,post.title,post.label,user.nickname,user.img,post.blogid,post.create_time from post,user where post.uid=user.uid and post.status=-1 order by create_time'
+  )
+    .then((result) => {
+      res.send({
+        code: 200,
+        message: 'success',
+        data: result,
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//提交文章审核结果
+updateMdAuditStatus = (req, res) => {
+  const { id, status } = req.body
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [1, 3]) && (id === undefined || status === undefined)) {
+    return res.status(403).send({
+      code: -1,
+      message: 'error request',
+    })
+  }
+  trans([
+    {
+      sql: 'update post set status=? WHERE id=?',
+      values: [status, id],
+    },
+  ])
+    .then(() => {
+      res.send({
+        code: 200,
+        message: '修改成功',
       })
     })
     .catch((err) => {
@@ -432,4 +491,6 @@ module.exports = {
   getMdListStatisticsByLabel,
   getMdOverviewData,
   getMdAuditOverviewData,
+  getAuditMdDataList,
+  updateMdAuditStatus,
 }
