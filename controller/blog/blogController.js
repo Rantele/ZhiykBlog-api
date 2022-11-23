@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-28 17:54:49
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-22 21:37:00
+ * @LastEditTime: 2022-11-23 15:41:54
  * @Description:文章模块
  *
  */
@@ -372,7 +372,7 @@ getMdOverviewData = (req, res) => {
     })
   }
   query(
-    'SELECT COUNT(IF(status != -1,TRUE,NULL)) AS total,COUNT(IF(status = 0,TRUE,NULL)) AS examine,COUNT(IF(status = -1,TRUE,NULL)) AS failed,COUNT(IF(TO_DAYS(create_time) = TO_DAYS(NOW()) and status !=-1,TRUE,NULL)) AS "td_add" FROM post'
+    'SELECT COUNT(IF(status != 0,TRUE,NULL)) AS total,COUNT(IF(status = -1,TRUE,NULL)) AS examine,COUNT(IF(status = 0,TRUE,NULL)) AS failed,COUNT(IF(TO_DAYS(create_time) = TO_DAYS(NOW()) and status !=0,TRUE,NULL)) AS "td_add" FROM post'
   )
     .then((result) => {
       res.send({

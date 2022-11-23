@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-06 19:22:00
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-22 20:54:54
+ * @LastEditTime: 2022-11-23 16:24:19
  * @Description:用户接口模块
  *
  */
@@ -439,15 +439,49 @@ getUserMdList = (req, res) => {
   const user = req.user
   const { search } = req.query
   query(
-    'select id,title,cover,label,blogid,vote_count,comment_count,create_time from post where uid=? and title REGEXP ? order by create_time',
+    'select id,title,cover,label,blogid,vote_count,comment_count,create_time from post where uid=? and status!=0 and title REGEXP ? order by create_time',
     [user.uid, search || '.*?']
   )
     .then((result) => {
-      if (result.length === 0) {
-        res.send({ code: 200, message: '操作成功', data: [] })
-      } else {
-        res.send({ code: 200, message: '操作成功', data: result })
-      }
+      res.send({ code: 200, message: '操作成功', data: result })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//获取用户未审核文章
+getUserMdNoAuditList = (req, res) => {
+  const user = req.user
+  query(
+    'select id,title,cover,label,blogid,vote_count,comment_count,create_time from post where uid=? and status=-1 order by create_time',
+    [user.uid]
+  )
+    .then((result) => {
+      res.send({ code: 200, message: '操作成功', data: result })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//获取用户审核未通过的文章
+getUserMdNoPassList = (req, res) => {
+  const user = req.user
+  query(
+    'select id,title,cover,label,blogid,vote_count,comment_count,create_time from post where uid=? and status=0 order by create_time',
+    [user.uid]
+  )
+    .then((result) => {
+      res.send({ code: 200, message: '操作成功', data: result })
     })
     .catch((err) => {
       console.log('[catch]:', err)
@@ -891,6 +925,8 @@ module.exports = {
   uploadMdImg,
   deleteMdImg,
   getUserMdList,
+  getUserMdNoAuditList,
+  getUserMdNoPassList,
   getUserMdBody,
   createMd,
   updateMd,
