@@ -7,13 +7,10 @@
  *
  */
 
-var fs = require('fs')
-var path = require('path')
 crypto = require('node:crypto') //uuid
 const moment = require('moment')
 const { query } = require('../../util/mysql')
 const { getImage, setImage, delImage, hasImage } = require('../../util/image')
-const { setItem } = require('../../util/redis')
 const formidable = require('formidable')
 //验证用户权限
 const roleVerify = require('../../util/roleVerify')
