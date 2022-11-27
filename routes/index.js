@@ -24,5 +24,8 @@ router.post('/banners/delete', banners.deleteBanner)
 //about
 var about = require('../controller/about/aboutController')
 router.get('/about/log', about.getVersionHistory)
+router.post('/about/create', about.createVersionRecord)
+router.post('/about/update', about.updateVersionRecord)
+router.post('/about/delete', about.deleteVersionRecord)
 
 module.exports = router

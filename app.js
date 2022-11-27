@@ -48,6 +48,7 @@ app.use(
       '/index/websites/list',
       '/index/banners/list',
       '/index/change',
+      '/about/log',
     ],
   })
 )

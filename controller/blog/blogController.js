@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-28 17:54:49
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-23 15:41:54
+ * @LastEditTime: 2022-11-24 22:03:43
  * @Description:文章模块
  *
  */
@@ -460,6 +460,9 @@ updateMdAuditStatus = (req, res) => {
     {
       sql: 'update post set status=? WHERE id=?',
       values: [status, id],
+    },
+    {
+      sql: 'insert',
     },
   ])
     .then(() => {
