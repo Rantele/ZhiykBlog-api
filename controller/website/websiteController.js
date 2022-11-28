@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-16 12:56:26
  * @LastEditors: Rantele
- * @LastEditTime: 2022-10-25 17:16:10
+ * @LastEditTime: 2022-11-28 20:05:16
  * @Description:
  *
  */
@@ -66,7 +66,7 @@ list = (req, res) => {
 //新增website
 createWS = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 2])) {
+  if (!roleVerify.roleValid(req.user.roles, [2])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -133,7 +133,7 @@ createWS = (req, res) => {
 //删除website
 deleteWS = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 2])) {
+  if (!roleVerify.roleValid(req.user.roles, [2])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -208,7 +208,7 @@ deleteWS = (req, res) => {
 //修改website
 updateWS = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 2])) {
+  if (!roleVerify.roleValid(req.user.roles, [2])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',

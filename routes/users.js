@@ -39,4 +39,9 @@ router.post('/vote/delete', users.deleteVote)
 router.post('/comment/create', users.createComment)
 // router.post('/comment/delete',users.deleteComment);
 
+//user manage
+router.get('/adminlist', users.getSearchAdminList)
+router.get('/list', users.getSearchUserList)
+router.get('/rolelist', users.getAdminRoleList)
+
 module.exports = router

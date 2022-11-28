@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-28 17:54:49
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-24 22:03:43
+ * @LastEditTime: 2022-11-28 20:04:06
  * @Description:文章模块
  *
  */
@@ -283,7 +283,7 @@ getMdCommentList = (req, res) => {
 getBlogStatistics = (req, res) => {
   //today、7day、30day
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+  if (!roleVerify.roleValid(req.user.roles, [3])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -334,7 +334,7 @@ getBlogStatistics = (req, res) => {
 //根据标签获取文章列表统计信息
 getMdListStatisticsByLabel = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+  if (!roleVerify.roleValid(req.user.roles, [3])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -365,7 +365,7 @@ getMdListStatisticsByLabel = (req, res) => {
 //获取文章概述信息
 getMdOverviewData = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+  if (!roleVerify.roleValid(req.user.roles, [3])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -393,7 +393,7 @@ getMdOverviewData = (req, res) => {
 //获取文章审核概述信息
 getMdAuditOverviewData = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+  if (!roleVerify.roleValid(req.user.roles, [3])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -421,7 +421,7 @@ getMdAuditOverviewData = (req, res) => {
 //获取待审核文章列表
 getAuditMdDataList = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 3])) {
+  if (!roleVerify.roleValid(req.user.roles, [3])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -450,7 +450,7 @@ getAuditMdDataList = (req, res) => {
 updateMdAuditStatus = (req, res) => {
   const { id, status } = req.body
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 3]) && (id === undefined || status === undefined)) {
+  if (!roleVerify.roleValid(req.user.roles, [3]) && (id === undefined || status === undefined)) {
     return res.status(403).send({
       code: -1,
       message: 'error request',

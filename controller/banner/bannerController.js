@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-16 12:56:26
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-18 12:23:26
+ * @LastEditTime: 2022-11-28 20:03:51
  * @Description:
  *
  */
@@ -61,7 +61,7 @@ list = (req, res) => {
 //新增banner
 createBanner = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 2])) {
+  if (!roleVerify.roleValid(req.user.roles, [2])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -128,7 +128,7 @@ createBanner = (req, res) => {
 //删除banner
 deleteBanner = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 2])) {
+  if (!roleVerify.roleValid(req.user.roles, [2])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',

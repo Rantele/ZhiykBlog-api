@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-06 19:22:00
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-27 20:24:17
+ * @LastEditTime: 2022-11-28 22:19:45
  * @Description:用户接口模块
  *
  */
@@ -17,6 +17,8 @@ crypto = require('node:crypto') //uuid
 var path = require('path')
 const formidable = require('formidable')
 const { getImage, setImage, delImage, hasImage } = require('../util/image')
+//验证用户权限
+const roleVerify = require('../util/roleVerify')
 
 //发送邮箱验证码
 sendMail = (req, res) => {
@@ -117,7 +119,7 @@ register = (req, res) => {
         const uid = crypto.randomUUID()
         const create_time = moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
         let insertSql = 'insert into user (uid,nickname,password,phone,email,create_time,roles) values (?,?,?,?,?,?,?)'
-        let insertSqlArr = [uid, nickname, password, phone ? phone : '', email, create_time, '-1']
+        let insertSqlArr = [uid, nickname, password, phone ? phone : '', email, create_time, '0']
         return query(insertSql, insertSqlArr)
       }
     })
@@ -911,6 +913,116 @@ createComment = (req, res) => {
     })
 }
 
+/**
+ * 用户管理模块
+ */
+
+//获取管理员用户列表
+getSearchAdminList = (req, res) => {
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [4])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
+  let { search, page_num, page_size } = req.query
+  console.log(search, page_num, page_size)
+  if (!search) {
+    search = '.*?'
+  }
+  if (!page_num || !page_size) {
+    page_num = 1
+    page_size = 10
+  }
+  query(
+    'select id,nickname,realname,email,create_time,roles from user where nickname REGEXP ? or realname REGEXP ? or email REGEXP ? and roles not REGEXP "^0$" limit ?,?',
+    [search, search, search, (parseInt(page_num) - 1) * parseInt(page_size), parseInt(page_size)]
+  )
+    .then((result) => {
+      res.send({
+        code: 200,
+        message: 'success',
+        data: result,
+        page_num: page_num,
+        page_size: page_size,
+        total: result.length,
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+//获取非管理员列表
+getSearchUserList = (req, res) => {
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [4])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
+  let { search, page_num, page_size } = req.query
+  if (search === undefined) {
+    search = '.*?'
+  }
+  if ((page_num === undefined) | (page_size === undefined)) {
+    page_num = 1
+    page_size = 10
+  }
+  query(
+    'select id,nickname,realname,email,create_time,roles from user where nickname REGEXP ? or realname REGEXP ? or email REGEXP ? and roles REGEXP "^0$" limit ?,?',
+    [search, search, search, (parseInt(page_num) - 1) * parseInt(page_size), parseInt(page_size)]
+  )
+    .then((result) => {
+      res.send({
+        code: 200,
+        message: 'success',
+        data: result,
+        page_num: page_num,
+        page_size: page_size,
+        total: result.length,
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//获取管理员类别
+getAdminRoleList = (req, res) => {
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [4])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
+  query('select * from role')
+    .then((result) => {
+      res.send({
+        code: 200,
+        message: 'success',
+        data: result,
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
 //moudle export
 module.exports = {
   login,
@@ -943,4 +1055,8 @@ module.exports = {
   deleteVote,
 
   createComment,
+
+  getSearchAdminList,
+  getSearchUserList,
+  getAdminRoleList,
 }

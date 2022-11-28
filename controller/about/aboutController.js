@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-11-26 20:44:12
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-27 21:57:24
+ * @LastEditTime: 2022-11-28 20:03:26
  * @Description:AboutController
  *
  */
@@ -30,7 +30,7 @@ getVersionHistory = (req, res) => {
 
 createVersionRecord = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 5])) {
+  if (!roleVerify.roleValid(req.user.roles, [4])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -68,7 +68,7 @@ createVersionRecord = (req, res) => {
 updateVersionRecord = (req, res) => {
   //vertify role
   console.log(req.user.roles)
-  if (!roleVerify.roleValid(req.user.roles, [1, 5])) {
+  if (!roleVerify.roleValid(req.user.roles, [4])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
@@ -106,7 +106,7 @@ updateVersionRecord = (req, res) => {
 
 deleteVersionRecord = (req, res) => {
   //vertify role
-  if (!roleVerify.roleValid(req.user.roles, [1, 5])) {
+  if (!roleVerify.roleValid(req.user.roles, [4])) {
     return res.status(403).send({
       code: -1,
       message: 'No Permission',
