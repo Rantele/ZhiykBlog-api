@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-11-26 20:44:12
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-28 20:03:26
+ * @LastEditTime: 2022-11-30 20:59:50
  * @Description:AboutController
  *
  */
@@ -43,17 +43,9 @@ createVersionRecord = (req, res) => {
       message: '无效参数',
     })
   } else {
-    trans([
-      {
-        sql: 'insert into version_history SET type=?,content=?,time=?',
-        values: [type, content, time],
-      },
-    ])
-      .then(() => {
-        return query('select * from version_history')
-      })
+    trans('insert into version_history SET type=?,content=?,time=?', [type, content, time])
       .then((result) => {
-        res.send({ code: 200, message: '创建成功', data: result })
+        res.send({ code: 200, message: '创建成功' })
       })
       .catch((err) => {
         console.log('[catch]:', err)
@@ -82,17 +74,9 @@ updateVersionRecord = (req, res) => {
     })
   } else {
     console.log(id, type, content, time)
-    trans([
-      {
-        sql: 'update version_history set type=?,content=?,time=? where id=?',
-        values: [type, content, time, id],
-      },
-    ])
-      .then(() => {
-        return query('select * from version_history')
-      })
+    query('update version_history set type=?,content=?,time=? where id=?', [type, content, time, id])
       .then((result) => {
-        res.send({ code: 200, message: '修改成功', data: result })
+        res.send({ code: 200, message: '修改成功' })
       })
       .catch((err) => {
         console.log('[catch]:', err)

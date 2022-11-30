@@ -2,7 +2,7 @@
  * @Author: Rantele
  * @Date: 2022-10-06 19:22:00
  * @LastEditors: Rantele
- * @LastEditTime: 2022-11-28 22:19:45
+ * @LastEditTime: 2022-11-30 20:58:41
  * @Description:用户接口模块
  *
  */
@@ -1023,6 +1023,69 @@ getAdminRoleList = (req, res) => {
     })
 }
 
+//修改管理员信息
+updateAdmin = (req, res) => {
+  //vertify role
+  if (!roleVerify.roleValid(req.user.roles, [4])) {
+    return res.status(403).send({
+      code: -1,
+      message: 'No Permission',
+    })
+  }
+  const { id, nickname, realname, email, roles } = req.body
+  if (!id || !nickname || !realname || !email || !roles) {
+    return res.status(403).send({
+      code: '-1',
+      message: '无效的参数',
+    })
+  }
+  console.log(id, nickname, realname, email, roles)
+  query('update user set nickname=?,realname=?,email=?,roles=? where id=?', [nickname, realname, email, roles, id])
+    .then(() => {
+      res.send({
+        code: 200,
+        message: 'success',
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
+//删除管理员
+deleteAdmin = (req, res) => {}
+
+//邮箱是否存在
+isExistEmail = (req, res) => {
+  //判断用户的email是否存在，确保email的唯一性
+  const { id, email } = req.query
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+  query('select id from user where email=? and id!=?', [email, id])
+    .then((result) => {
+      let flag = false
+      if (result.length > 0) {
+        //邮箱已经存在
+        flag = true
+      }
+      res.send({
+        code: 200,
+        message: 'success',
+        data: flag,
+      })
+    })
+    .catch((err) => {
+      console.log('[catch]:', err)
+      res.status(500).send({
+        code: -1,
+        message: '服务器错误',
+      })
+    })
+}
+
 //moudle export
 module.exports = {
   login,
@@ -1059,4 +1122,7 @@ module.exports = {
   getSearchAdminList,
   getSearchUserList,
   getAdminRoleList,
+  updateAdmin,
+
+  isExistEmail,
 }

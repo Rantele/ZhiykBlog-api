@@ -15,7 +15,6 @@ const blogRouter = require('./routes/blog')
 //app
 const app = express()
 var server = http.createServer(app)
-
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
 //设置允许跨域

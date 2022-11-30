@@ -40,8 +40,10 @@ router.post('/comment/create', users.createComment)
 // router.post('/comment/delete',users.deleteComment);
 
 //user manage
-router.get('/adminlist', users.getSearchAdminList)
-router.get('/list', users.getSearchUserList)
-router.get('/rolelist', users.getAdminRoleList)
+router.get('/ums/admin/list', users.getSearchAdminList)
+router.get('/ums/user/list', users.getSearchUserList)
+router.get('/ums/admin/rolelist', users.getAdminRoleList)
+router.get('/isExistEmail', users.isExistEmail)
+router.post('/ums/admin/update', users.updateAdmin)
 
 module.exports = router
